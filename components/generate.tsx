@@ -1,21 +1,27 @@
 // Example from https://beta.reactjs.org/learn
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import styles from './generate.module.css'
 
 function MyButton() {
-  function handleClick() {
-  }
+    const [ markdown, setMarkdown ] = useState('')
 
-  return (
-    <div>
-      <button onClick={handleClick} className={styles.generate}>
-        Generate
-      </button>
-    </div>
-  )
+    function handleClick() {
+        setMarkdown('markdown')
+        console.log(markdown)
+    }
+
+    return (
+        <div>
+            <button onClick={handleClick} className={styles.btnGenerate}>
+                Generate
+            </button>
+            <hr />
+            <pre className={styles.preMarkdown}>{markdown}</pre>
+        </div>
+    )
 }
 
 export default function Generate() {
-  return <MyButton />
+    return <MyButton />
 }
