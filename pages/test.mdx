@@ -1,0 +1,28 @@
+# X
+
+import Generate from '../components/generate'
+
+<Generate presets={[
+    {
+        title: 'type',
+        state: {
+            constants: [
+                {
+                    key: 'type',
+                    value: 'cognitive linguistics'
+                },
+                {
+                    key: 'type',
+                    value: 'complex systems'
+                },
+            ]
+        }
+    },
+    {
+        title: 'system',
+        state: {
+            context: 'List of {{type}}',
+            contents: '{{context:System functions}}'
+        }
+    },
+]} />

@@ -1,0 +1,23 @@
+import Generate from '../components/generate'
+
+# Playground
+
+<Generate presets={[
+    {
+        title: 'Test',
+        state: {
+            constants: [
+                {
+                    key: 'name',
+                    value: 'John Doe'
+                },
+                {
+                    key: 'age',
+                    value: '32'
+                },
+            ],
+            context: 'Hello my name is {{name}} and I am {{age}} years old. My expertise includes system engineering.',
+            contents: 'application',
+        }
+    },
+]} />

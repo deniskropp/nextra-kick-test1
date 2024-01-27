@@ -18,7 +18,9 @@
   },
   "homepage": "https://github.com/shuding/nextra-docs-template#readme",
   "dependencies": {
+    "axios": "^1.6.7",
     "cohere-ai": "^7.7.3",
+    "dotenv": "^16.4.1",
     "next": "^13.0.6",
     "nextra": "latest",
     "nextra-theme-docs": "latest",
