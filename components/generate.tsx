@@ -1,82 +1,136 @@
-import axios from 'axios'
+import axios, { type AxiosError } from 'axios'
 import { useState } from 'react'
+import { useKickTemplate } from '../modules/kick-it/src'
 import styles from './generate.module.css'
 
-import { useKickTemplate } from '../modules/kick-it/src'
-import type { KickTemplate } from '../modules/kick-it/src'
-
-interface State {
-    context?: string
-    contents?: string
-    constants?: { key: string, value: string }[]
+/**
+ * Represents the state required by the Generate component.
+ */
+export interface GenerateState {
+    context?: string  // The context in which generation is performed
+    contents?: string // The content body for the generation process
+    constants?: {     // A list of constants to be used in the generation
+        key: string   // The key of the constant
+        value: string // The value of the constant
+    }[]
 }
 
-interface Preset {
-    title: string
-    state: State
+/**
+ * Represents a preset configuration for the Generate component.
+ */
+export interface GeneratePreset {
+    title: string        // The display title for the preset
+    state: GenerateState // The pre-defined state for the preset
 }
 
-interface Props extends State {
-    children?: React.ReactNode
-    presets?: Preset[]
+/**
+ * Props for the Generate component, extending from GenerateState.
+ */
+export interface GenerateProps extends GenerateState {
+    children?: React.ReactNode // Optional child components
+    presets?: GeneratePreset[] // An array of presets for quick configuration
 }
 
-export default function Generate(props: Props) {
+/**
+ * This function generates the UI for setting constants, context, and contents, 
+ * and handles the click event to trigger the generation process. It also 
+ * displays the output and prompt messages.
+ *
+ * @param {GenerateProps} props - the properties for the Generate component
+ * @return {JSX.Element} the UI for setting constants, context, and contents
+ */
+export default function Generate(props: GenerateProps) {
+    // Define state using useState hook
     const [state, setState] = useState({
+        // Initialize context with props.context, or empty string if props.context is null or undefined
         context: props.context ?? '',
+        // Initialize contents with props.contents, or empty string if props.contents is null or undefined
         contents: props.contents ?? '',
+        // Initialize constants with props.constants, or an empty array if props.constants is null or undefined
         constants: props.constants ?? [],
+        // Initialize key with an empty string
         key: '',
+        // Initialize value with an empty string
         value: ''
     })
+    // Define pending state using useState hook
+    const [pending, setPending] = useState(false)
+    // Define markdown state using useState hook
     const [markdown, setMarkdown] = useState('')
+    // Define prompt state using useState hook
     const [prompt, setPrompt] = useState('')
 
+    /**
+     * Handles the click event and performs a series of asynchronous operations.
+     */
     async function handleClick() {
-        const templ: KickTemplate = useKickTemplate({
+        // Set the pending state to true
+        setPending(true)
+
+        // Define a template using the useKickTemplate hook
+        const templ = useKickTemplate({
             constants: [
-                ...state.constants,
+                ...state.constants // Include state constants
             ],
             contents: [
-                state.contents
+                state.contents // Include state contents
             ],
             context: [
-                state.context
+                state.context // Include state context
             ]
         })
 
+        // Set the prompt using the template's makeSingle method
         setPrompt(templ.makeSingle())
 
         try {
             const options = {
-                url: '/api/cohere',
-                method: 'POST',
-                data: templ
+                url: '/api/cohere', // Define the API endpoint
+                method: 'POST',     // Specify the HTTP method
+                data: templ         // Include the template data in the request
             }
-            const response = await axios.request(options)
-            setMarkdown(response.data)
+            const response = await axios.request(options) // Send the request using axios
+            setMarkdown(response.data) // Set the markdown with the response data
         }
         catch (ex) {
-            setMarkdown(ex.toString())
+            const error = ex as AxiosError
+
+            console.log(ex)
+
+            // Set the markdown with the error message
+            setMarkdown(`### Error
+${error.message}
+
+${error.response.data}
+`)
+        }
+        finally {
+            setPending(false)
         }
     }
 
+    /**
+     * Function to add a constant to the state.
+     */
     const addConstant = () => {
+        // Update state with new constants
         setState({
             ...state,
             constants: [
                 ...state.constants,
                 {
-                    key: state.key,
-                    value: state.value
+                    key: state.key,    // New constant key
+                    value: state.value // New constant value
                 }
             ],
-            key: '',
-            value: ''
+            key: '',  // Reset key
+            value: '' // Reset value
         })
     }
 
-    const pre = [
+    // Define an array of presets
+    const presets = [
+        // Define the first preset with title '⚫' and state object with empty constants, contents, and context
         {
             title: '⚫',
             state: {
@@ -85,19 +139,25 @@ export default function Generate(props: Props) {
                 context: '',
             }
         },
+        // Define the second preset with title '⬛' and state object with empty constants
         {
             title: '⬛',
             state: {
                 constants: [],
             }
         },
+        // Spread the presets from props if it exists, otherwise use an empty array
         ...(props.presets ?? [])
     ]
 
+    /**
+     * This component returns the following JSX element
+     */
     return (
         <div className={styles.container}>
+            {/* Render buttons based on presets */}
             <div>
-                {pre.map((x, i) =>
+                {presets.map((x, i) =>
                     <button
                         className={styles.btnGenerate}
                         key={i}
@@ -110,6 +170,7 @@ export default function Generate(props: Props) {
                     </button>
                 )}
             </div>
+            {/* Display Constants section */}
             <h2>Constants</h2>
             <table className={styles.table}>
                 <thead>
@@ -119,12 +180,14 @@ export default function Generate(props: Props) {
                     </tr>
                 </thead>
                 <tbody>
+                    {/* Map through constants and display each in a table row */}
                     {state.constants.map((c, i) => (
                         <tr key={i}>
                             <td>{c.key}</td>
                             <td colSpan={2}>{c.value}</td>
-                        </tr>))
-                    }
+                        </tr>
+                    ))}
+                    {/* Input fields to add new constants */}
                     <tr>
                         <td>
                             <input
@@ -150,6 +213,7 @@ export default function Generate(props: Props) {
                     </tr>
                 </tbody>
             </table>
+            {/* Display Context section */}
             <h2>Context</h2>
             <textarea
                 className={styles.txt}
@@ -159,6 +223,7 @@ export default function Generate(props: Props) {
                     context: event.target.value
                 })}
             />
+            {/* Display Content section */}
             <h2>Content</h2>
             <textarea
                 className={styles.txt}
@@ -168,12 +233,15 @@ export default function Generate(props: Props) {
                     contents: event.target.value
                 })}
             />
-            <button onClick={handleClick} className={styles.btnGenerate}>
+            {/* Button to trigger handleClick function */}
+            <button onClick={handleClick} className={styles.btnGenerate} disabled={pending}>
                 {props.children ?? 'Generate'}
             </button>
+            {/* Render output based on markdown */}
             <div className={styles.output}>
                 {markdown.split('\n').map((x, i) => <p key={i}>{x}</p>)}
             </div>
+            {/* Render prompt based on prompt */}
             <div className={styles.prompt}>
                 {prompt.split('\n').map((x, i) => <p key={i}>{x}</p>)}
             </div>
