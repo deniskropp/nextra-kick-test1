@@ -90,7 +90,7 @@ export default function Generate(props: GenerateProps) {
                 data: templ         // Include the template data in the request
             }
             const response = await axios.request(options) // Send the request using axios
-            setMarkdown(response.data.text) // Set the markdown with the response data
+            setMarkdown(response.data/*.text*/) // Set the markdown with the response data
         }
         catch (ex) {
             const error = ex as AxiosError
