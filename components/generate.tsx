@@ -85,12 +85,12 @@ export default function Generate(props: GenerateProps) {
 
         try {
             const options = {
-                url: '/api/cohere', // Define the API endpoint
+                url: 'https://kick.violass.club/kick', // Define the API endpoint
                 method: 'POST',     // Specify the HTTP method
-                data: templ         // Include the template data in the request
+                data: { template: templ }         // Include the template data in the request
             }
             const response = await axios.request(options) // Send the request using axios
-            setMarkdown(response.data/*.text*/) // Set the markdown with the response data
+            setMarkdown(response.data.content) // Set the markdown with the response data
         }
         catch (ex) {
             const error = ex as AxiosError
